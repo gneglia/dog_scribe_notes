@@ -1,0 +1,187 @@
+\include{dog15template}
+
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\blambda}{\boldsymbol{\lambda}}
+\newcommand{\bmu}{\boldsymbol{\mu}}
+
+\begin{document}
+
+%header --- replace with appropriate values
+\lecture{2}{December 9, 2015}{Giovanni Neglia}
+
+
+
+
+
+%start notes here
+In this lesson we provide some background on convex sets, convex functions and the Lagrange multipliers method for convex optimization problems.
+
+\section{Convexity}
+
+\begin{definition}[Convex set] 
+A subset $C \subset \mathbb{R}^n$ is convex if for each $\x, \y \in C$, and $\alpha \in [0,1]$, it holds that 
+\[\alpha \x + (1-\alpha) \y \in C.\]
+\end{definition}
+
+\begin{definition}[Convex function]
+A function $f: C \rightarrow \mathbb R$, where $C$ is a convex set, is convex if 
+\[ f(\alpha \x + (1-\alpha) \y) \le \alpha f(\x) + (1-\alpha) f(\y), \]
+for each $\x, \y \in C$, and $\alpha \in [0,1]$.
+\end{definition}
+
+\begin{definition}[Concave function]
+A function $f: C \rightarrow \mathbb R$, where $C$ is a convex set, is concave if $-f$ is convex, or equivalently if 
+\[ f(\alpha \x + (1-\alpha) \y) \ge \alpha f(\x) + (1-\alpha) f(\y), \]
+for each $\x, \y \in C$, and $\alpha \in [0,1]$.
+\end{definition}
+
+
+
+\section{Lagrange multipliers}
+
+Given a function $f: \mathbb{R}^n \rightarrow \mathbb{R}$ consider the optimization problem
+\begin{equation}
+\begin{aligned}
+& \underset{\x \in \mathbb{R}^n}{\text{minimize}}
+	& & f(\x) \\
+& \text{subject to}
+      & &  h_i(\x)=0, \text{  }i=1,\dots,m\\
+&       & & g_j(\x)\le0, \text{  }j=1,\dots,r\\
+\end{aligned}
+\label{e:optimization}
+\end{equation}
+\begin{definition}[Lagrangian]
+The \emph{Lagrangian function} $L: \mathbb{R}^{n+m+r} \rightarrow \mathbb{R}$ is defined as
+\begin{equation}
+	\label{e:lagrangian}
+	L(\x,\blambda,\bmu)=f(\x)+ \sum_{i=1}^m \lambda_i h_i(\x) + \sum_{j=1}^r \mu_j g_j(\x)
+\end{equation}
+where $\blambda=(\lambda_1, \lambda_2, \dots \lambda_m)^T$ is the vector of \emph{Lagrange multipliers} corresponding to the equality constraints, and $\bmu=(\mu_1, \mu_2, \dots \mu_r)^T$ is the vector of Lagrange multipliers corresponding to the inequality constraints.
+\end{definition}
+
+%Given the optimization problem~\eqref{e:optimization}, and a feasible solution $\x'$, we say that an inequality constraint $g_j$ is \emph{inactive} at $\x'$ if $g_j(\x')=0$, and \emph{active} if  $g_j(\x')=0$.
+%We denote the set of active constraints at $\x'$ as $A(\x')$, i.e.
+%\[
+%	A(\x')=\{j =1, 2 \dots r |  g_j(\x')=0\}.
+%\]
+
+
+
+The following theorem is the tool that allows us to solve most of the network optimization problems discussed in our course.
+\begin{theorem}[Convex optimization with linear constraints]
+Consider the optimization problem
+\begin{equation}
+\begin{aligned}
+& \underset{\x \in \mathbb{R}^n}{\textnormal{minimize}}
+	& & f(\x) \\
+& \textnormal{subject to}
+      & &  \mathbf{a}_i^T \x=b_i, \text{  }i=1,\dots,m\\
+&       & & \mathbf{c}_j^T \x \le d_j, \text{  }j=1,\dots,r\\
+&	& & \x \in X,
+\end{aligned}
+\label{e:opt_convex_linear}
+\end{equation}
+where $f$ is convex and continuously differentiable and $X$ is a polyhedral set, i.e.~a set specified by the intersection of a finite number of closed half spaces. 
+Then $\x^*$ is a global minimum for this optimization problem if and only if there exist $\lambda_i^*$, $i \in \{1,2,\dots m\}$ and $\mu_j^*$, $j \in \{1,2, \dots r\}$ such that:
+\begin{enumerate}
+\item $\x^*$ is feasible,
+\item $\mu_j^*\ge 0$ and $\mu_j^* (\mathbf{c}_j^T \x^* - d_j) =0$, $\forall j \in \{1, 2, \dots r\}$,
+\item $\nabla_\x L(\x^*,\blambda^*,\bmu^*)^T (\x - \x^*) \ge 0, \;\; \forall \x \in X$.
+\end{enumerate}
+\label{th:opt_convex_linear}
+\end{theorem}
+\begin{proof}
+The result can be easily derived adapting the proof of Theorem 3.4.1 in~\cite{Ber99}.
+\end{proof}
+
+\begin{remark}[Complementary slackness]
+The conditions $\mu_j^* (\mathbf{c}_j^T \x^* - d_j) =0$ are called \emph{complementary slackness conditions}, because every time the constraint $\mathbf{c}_j^T \x^* - d_j\le 0$ is slack (meaning that $\mathbf{c}_j^T \x^* - d_j <0$), the constraint $\mu_j^*\ge0$ must not be slack (meaning that $\mu_j^*=0$).
+\end{remark}
+
+\begin{remark}[Flexible assignment of Lagrange multipliers]
+We observe that the polyhedral set $X$ can be expressed by a set of linear inequalities analogous to those explicitly considered in problem~\eqref{e:opt_convex_linear}. Theorem~\ref{th:opt_convex_linear} allows us then to include an arbitrary set of constraints in the Lagrangian and take into account the other constraints through the set $X$.
+\end{remark}
+
+\begin{remark}[$X=\mathbb{R}^n$]
+If the set $X$ coincides with $\mathbb{R}^n$, i.e.~all the constraints are explicitly taken into account through the Lagrangian, then the condition $\nabla_\x L(\x^*,\blambda^*,\bmu^*)^T (\x - \x^*) \ge 0, \;\; \forall \x \in \mathcal{R}^n$ leads to
+\[
+	\nabla_\x L(\x^*,\blambda^*,\bmu^*)=0.
+\] 
+\end{remark}
+
+Many optimization problems require to minimize a convex cost function. 
+In other cases, we want to maximize a concave utility function.
+Maximizing the function $f$ over a given set $C$ is equivalent to minimize the function $-f$ over the same set.
+If $f$ is concave, $-f$ is convex.
+The corresponding theorem for the maximization of a concave function can then be immediately derived applying Theorem~\ref{th:opt_convex_linear} to $-f$. If we maintain the same definition for the Lagrangian function as in~Eq.~\eqref{e:lagrangian}, it holds:
+
+\begin{theorem}[Concave optimization with linear constraints]
+Consider the optimization problem
+\begin{equation}
+\begin{aligned}
+& \underset{\x \in \mathbb{R}^n}{\textnormal{maximize}}
+	& & f(\x) \\
+& \textnormal{subject to}
+      & &  \mathbf{a}_i^T \x=b_i, \text{  }i=1,\dots,m\\
+&       & & \mathbf{c}_j^T \x \le d_j, \text{  }j=1,\dots,r\\
+&	& & \x \in X,
+\end{aligned}
+\end{equation}
+where $f$ is concave and continuously differentiable and $X$ is a polyhedral set, i.e.~a set specified by the intersection of a finite number of closed half spaces. 
+Then $\x^*$ is a global maximum for this optimization problem if and only if there exist $\lambda_i^*$, $i \in \{1,2,\dots m\}$ and $\mu_j^*$, $j \in \{1,2, \dots r\}$ such that:
+\begin{enumerate}
+\item $\x^*$ is feasible,
+\item $\mu_j^*\le 0$ and $\mu_j^* (\mathbf{c}_j^T \x^* - d_j) =0$, $\forall j \in J$,
+\item $\nabla_\x L(\x^*,\blambda^*,\bmu^*)^T (\x - \x^*) \le 0, \;\; \forall \x \in X$.
+\end{enumerate}
+\label{th:opt_concave_linear}
+\end{theorem}
+
+
+\subsection{Lagrange multipliers as shadow prices}
+In specific contexts the Lagrange multipliers often represent quantities with concrete physical meaning. For example, in economic applications they can often be interpreted as prices. In particular, if $f(\x)$ is a cost, the Lagrange multiplier associated to a constraint can be viewed as the instantaneous change, per unit of the constraint, in the optimal cost obtained by relaxing the constraint. In other words, it is the marginal utility of relaxing the constraint, or, equivalently, the marginal cost of strengthening the constraint. We are going to show it through a specific simple example, but the result is more general.
+
+\begin{example}
+Consider the following cost minimization problem
+\begin{equation*}
+\begin{aligned}
+& \underset{\x \in \mathbb{R}^n}{\textnormal{minimize}}
+	& & f(\x) \\
+& \textnormal{subject to}
+      & &  \mathbf{a}^T \x=b
+\end{aligned}
+\end{equation*}
+where $f(\x)$ is a convex cost function.\footnote{
+	Convexity is not required, but we maintain this hypothesis 
+	because we only stated some results for Lagrange multipliers 
+	in the framework of convex optimization problems.
+}
+The Lagrangian function is $f(\x)+\lambda(\mathbf{a}^T \x - b)$ and 
+Theorem~\ref{th:opt_convex_linear} states that if $\x^*$ is a global minimum then it exists $\lambda^*$ such that
+\[
+	\nabla f(\x^*) + \lambda^*\mathbf{a}=0 \text{ and } \mathbf{a}^T \x^* =b, 
+\]
+and the optimal cost is $f(\x^*)$.
+If the level of the constraint is changed to $b+\Delta b$, a new optimum solution $\x^* + \Delta \x^*$ is determined with $\mathbf{a}^T (\x^*+\Delta \x^*) = b+ \Delta b$, and then  $\mathbf{a}^T \Delta \x^* = \Delta b$. The corresponding cost is 
+\[
+	f(\x^* + \Delta \x^*) \approx f(\x^*)+ \nabla f(\x^*)^T \Delta \x^* = f(\x^*) -\lambda^* \mathbf{a}^T \Delta \x^* =  f(\x^*) -\lambda^*  \Delta b.
+\]
+It follows that the sensitivity of the cost to the constraint is:
+\[
+	\frac{\Delta \textnormal{cost}}{\Delta b}= \frac{f(\x^* +\Delta \x^*) - f(\x^*)}{\Delta b} = -\lambda^*. 
+\]
+Consider for example that $\x$ represents a vector of quantities of different resources that can be invested in order to reduce the cost $f$, and that the constraint $\mathbf{a}^T \x=b$ represents the total amount of resources that can be invested. Now, if less resources are invested ($\Delta b <0$), the total cost increases ($\Delta \textnormal{cost}>0$), and the multiplier $\lambda^*$ is positive. The multiplier represents the cost increase per  unit of resource removed and then the implicit value of a resource in the framework of the cost minimization problem. For this reason the multipliers are often referred to as \emph{shadow prices}.
+\end{example}
+%%%%  Bibliography goes here
+
+\begin{thebibliography}{alpha}
+
+\bibitem{Ber99} Dimitri P. Bertsekas,
+\newblock Nonlinear programming.
+\newblock {\em Athena Scientific}, 1999.
+
+\end{thebibliography}
+
+
+\end{document}
