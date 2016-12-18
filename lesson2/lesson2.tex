@@ -4,12 +4,12 @@
 \newcommand{\y}{\mathbf{y}}
 \newcommand{\z}{\mathbf{z}}
 \newcommand{\blambda}{\boldsymbol{\lambda}}
-\newcommand{\bmu}{\boldsymbol{\mu}}
+\newcommand{\bmu}{\boldsymbol{\nu}}
 \usepackage{color}
 
 \begin{document}
 %header --- replace with appropriate values
-\lecture{3}{January 6, 2016}{Ioannis Mantas, Stefano Ponziani}
+\lecture{3}{December 14, 2016}{Arthur Finkelstein, Remy Garcia}
 
 %start notes here
 \section{Introduction}
@@ -17,55 +17,96 @@
 In the previous lesson, we looked into the example of an electrical network and showed that a simple local policy for an agent, in our case an electron, can lead to the optimization of a large distributed problem which is the minimization of energy loss in the  network. In this lesson, we consider ourselves with a road traffic model to demonstrate that choosing local policies is not trivial and how potential wrong choices can lead to poor system behaviour. Moreover we solve the more general problem which arises from our road network and present how local policies in such cases should be correctly chosen.
 
 \section{Problem Definition}
-
-Let us look into the following road-traffic model.\\\\
+We consider an oriented graph (e.g.\ the road-traffic graph of a city) like in Figure~\ref{fig:1}. From now on we look at this problem as a routing problem.
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=.7]{FIG1.jpeg}
+\includegraphics[scale=.7]{fig1.pdf}
+\caption{Oriented graph of a city}
 \label{fig:1}
-\end{figure}\\
-From now on we can consider our problem as a routing problem.
-We have a set of directed links $E$ representing the connections between the nodes and a set of \textit{source-destination} pairs $S$ where pair $(A,B)$ represents the agents wanting to travel from node $A$ to node $B$.\\
-For each $s \in S$ we define $R(s)$ to be the set of routes connecting the \textit{source-destination} pair and $f(s)$ to be the amount of traffic on $s$. Moreover, we denote by $R$ the set of all the routes. Since for a given $s$ traffic from a source to a destination can be split into multiple routes, we define $x_r$ to be the amount of traffic of $s$ going through route $r$. Finally, we define $y_l$ to be the amount of traffic on link $l$ over all routes, i.e.~$y_l=\sum_{r | l \in r} x_r$.\\
-On each link $l \in E$ there exists a delay which is a function of the traffic on that link, $y_l$, and is denoted $ D_l(y_l)$.  The delay function  is assumed to be convex, increasing and its first derivative to exist.\\\\
+\end{figure}
+
+We have a set of directed links $E$ which are the connections between the nodes of the graph and a set of \textit{source-destination} pairs $S$, where we have $s \in S$ such that $s = (i,j$) represents the agents wanting to travel from node $i$ to $j$. Moreover we denote by $R$ the set of all routes.
+
+For each $s \in S$ we define $R(s)$ to be the set of routes connecting the \textit{source-destination} pair and $f_s$ to be the amount of traffic to route on $s$. Also $s(r)$ is the \textit{source-destination} pair connected by $r \in R$. Since a given $f_s$ can be split over various routes, we denote by $x_r$ the amount of traffic of $s(r)$ that takes route $r$ i.e.\ $\sum\limits_{r \in R(s)}^{} x_r = f_s\ \forall s$ with $x_r \ge 0$.
+
+Finally, we define $y_l$ to be the amount of traffic on link $l \in E$ over all routes, i.e.\ $y_l=\sum\limits_{r | l \in r} x_r$. On each link $l$ there exists a delay per unit of traffic which is a function of the traffic on that link that we denote by $D_l(y_l)$. The delay function is assumed to be convex, increasing and its first derivative to exist.\\
+
 Thus the problem consists of minimizing the overall delay experienced by the agents.\\
-To express the constraints of our optimization problem the following two matrices. \textcolor{red}{(Attention, this problem is not linear)}. Let $A$ be the link-route incidence matrix where $A_{lr}$ = 1 if link $l$ belongs to route $r$ and $A_{lr}$ = 0 otherwise. Secondly, let $H$ be the source-destination route incidence matrix where $H_{sr}$ = 1 if route $r$ connects $s$ and $H_{sr}$ = 0 otherwise.  Note that the summation of each column of $H$ is equal to 1, that means each route connects exactly one pair.\\\\
+
 The optimization problem can be modelled as follows:
 \begin{equation}
 \begin{aligned}
-& \underset{\x , \y }{\text{minimize}}
-	& &  \sum_{l \in E} y_{l} D_{l}(y_{l}) \\
+& {\text{minimize}}
+    & &  \sum_{l \in E} y_{l} D_{l}(y_{l}) \\
 & \text{subject to}
-      & &  y_{l} = \sum_{r|l \in r} x_{r}, \text{  }\forall l \in E\\
-&       & & f_{s} = \sum_{r|s(r) = s} x_{r}, \text{  }\forall s \in S\\
-&      &&  x_{r} \geq 0 , \text{  }\forall r \in R\\
+& & \sum_{r \in R(s)} x_{r} = f_{s}\ \forall s \in S\\
+&       & &  y_{l} = \sum\limits_{r|l \in r} x_{r}\ \forall l \in E\\
+&      &&  x_{r} \geq 0\ \forall r \in R\\
 \end{aligned}
 \label{e:prob}
 \end{equation}
-,where $s(r)$ returns the source-destination pair that the route $r$ connects.
 
-\section{A first approach to the solution}
+This problem happens to be convex.
 
-In order to minimize the total delay experienced by all drivers, we need to find the local policies that will be followed. In the previous lesson we observed how a simple local policy can lead to the optimal solution. In this section we illustrate, with a  simple example, how a local policy which may seem logical and trivial may lead to a ``bad'' solution.\\\\
-\begin{figure}[h!]
+\begin{proof}
+        We know that $D_l$ is increasing and convex. This means that for all $y_l$ we have $D_l'(y_l) \ge 0$ and $D_l''(y_l) \ge 0$.
+
+        We know that $y_lD_l(y_l)$ is convex iff its second derivative is nonnegative.
+
+        We start by computing the first derivative. $(y_lD_l(y_l))' = D_l(y_l) + y_lD_l'(y_l)$ where $D_l(y_l) \ge 0$ and $y_lD_l'(y_l) \ge 0$. Thus $(y_lD_l(y_l))'$ is nonnegative.
+
+        Then we compute the second derivative. $(y_lD_l(y_l))'' = D_l'(y_l) + y_lD_l''(y_l) + D_l'(y_l) = 2D_l'(y_l) + y_lD_l''(y_l)$ where $2D_l'(y_l) \ge 0$ and $y_lD_l''(y_l) \ge 0$. Thus $(y_lD_l(y_l))''$ is nonnegative.
+
+        Hence $y_lD_l(y_l)$ is convex and it implies that $\sum\limits_{l} y_{l}D_{l}(y_{l})$ is also convex and thus this problem is convex.
+\end{proof}
+
+\section{Naive solution}
+
+One naive solution for this problem would be that each person tries to minimize his own delay, and from this we could hope that the total delay would be minimized. Therefore we are going to check if this solution is indeed the optimal one and if it isn't how far off are we from the optimal.
+
+\subsection{A Specific exemple}
+
+\begin{figure}[h]
 \centering
-\includegraphics[scale=.7]{FIG2.jpg}
-\label{fig:2}
-\end{figure}\\
-In our example, we have a flow of $1$ car per time unit between city $A$ to city $B$ and they can choose from two available routes. The upper route has a constant delay function of $D_{upper}=1$ and the lower has a linear delay function which is equal to the percentage of drivers that take that  route, $D_{lower} = y$.\\\\
-The most natural approach would be for each driver to choose the route that has the lowest delay and in that way we expect all the drivers to face equal delay. \\
-More formally, in the general case, we expect that $\forall r_1, r_2$ such that $s(r_1) = s(r_2), x_{r_1} > 0$ and $x_{r_2} > 0$ the delay will be $\sum_{l \in r_1} D(y_l) =  \sum_{l \in r_2} D(y_l) $.\\\\
-Getting back to the example, the overall delay experienced  by drivers will be:
-\begin{equation}
-\label{e:TotDelay}
-	 (1-\alpha) \times  D_{upper}(1-\alpha)  + \alpha \times  D_{lower}(\alpha) = (1-\alpha) \times 1 + \alpha \times \alpha,
-\end{equation}
+\includegraphics[scale=0.5]{output.png}
+\caption{Our specific network}
+\end{figure}
 
-where $\alpha$ is the percentage of drivers that choose the lower route.\\
-According to the aforementioned approach all drivers should choose the lower route as $D_{lower}$ would be lower than  $D_{upper}$. In this way $\alpha$ will be $1$ and the total delay will be $1$. But is this the optimal solution? \\
-Minimizing the equation \eqref{e:TotDelay}  results to $\alpha^*=\frac{1}{2}$ and an overall experienced delay of $\frac{3}{4}= 0,75$. 
+With this specific exemple each different edge has a specific delay equal to $ D_i = \alpha_i \times y_i$.
 
+From this function we can minimize the total delay which gives us $\sum\limits_{i=1}^{3} (\alpha_i \times y_i) \times y_i = \sum\limits_{i=1}^{3} \alpha_i \times y^2_i $, and we can see that this function is the same as the model we studied in the first lecture.
 
+We can compare our network to an electrical network with three different resistances in parallel, and from our previous lecture we know that the difference of potential $ \Delta V = I_1 R_1 = I_2 R_2 = I_3 R_3 $ with $I_i = y_i $ and  $ R_i = \alpha_i $, so at the optimal solution $y^*_i$ we have then $\alpha_1 \times y^*_1 = \alpha_2 \times y^*_2 = \alpha_3 \times y^*_3$ which is  $ D_1(y^*_1) = D_2(y^*_2) = D_3(y^*_3)$.
+
+This result can be easily understood with the fact that each car at the beginning will take the path with the least delay and once this delay becomes bigger than the delay of either of the other path we will take this path, and so on, this will create a situation of equilibrium in regard to the delays of each route.
+
+\subsection{A general exemple}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{output2.png}
+\caption{Our general network}
+\end{figure}
+
+We are now going to extend the previous exemple with delay functions that aren't linear, we have then $D_1(y_1) = 1$ and $D_2(y_2) = y^n_2 $, because this function relates the most to how delay affects routing in a real world scenario. This exemple is known as the PIGOU exemple.
+
+The comparison between the two delay function gives us the following graphic.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.2]{exo2.pdf}
+\caption{Our general network}
+\end{figure}
+
+We now put our naive solution in this example with each person minimizing his or her delay. We get $y^1_1 = 0$ and $y^1_2 = 1$ because the second link is always the most attractive with regard to the delay, $D_t(1) = 1 \times 0 + 1^n \times 1 = 1$.
+
+We now try to solve the problem in the general case where $D_t(\alpha ) = (1 - \alpha ) \times 1 \times \alpha \times \alpha ^n$. We know that to find the minimum we look for: $$D'_t(\alpha ) = 0 \iff -1 + (n + 1) \times \alpha ^n \iff \alpha ^* = \frac{1}{{\sqrt[n]{n+1}}}$$ Thus we know that the optimal quantity of traffic is $\alpha ^*$. Now we will check that the delay we got from the naive solution is optimal or not.
+
+The optimal delay is: $$D_t(\alpha ^*) = 1 - \alpha ^* + \alpha ^{*^{n+1}} = 1 - \frac{1}{{\sqrt[n]{n+1}}} + \frac{1}{{\sqrt[n]{n+1}}} * \frac{1}{n+1} = 1 - \frac{1}{{\sqrt[n]{n+1}}} * \frac{n}{n+1}$$ Thus we can deduce that for every $ n > 0$ the delay is strictly less than 1. Therefore the naive solution is false but if this solution is close enough from the optimal one it would still be acceptable.
+
+For this we compute the price of anarchy: $$ \frac{D_t(\alpha ^1)}{D_t(\alpha ^*)} = \frac{1}{1 - \frac{1}{{\sqrt[n]{n+1}}} * \frac{n}{n+1}} \rightarrow +\infty$$ Thus the naive solution gives us a delay that is arbitrarily bigger than the optimal one so our solution is unfortunately pretty poor.
+
+The next step would be to apply our reasoning to the original problem.
 
 \section{Solving Problem~\eqref{e:prob} by the Lagrange multipliers method}
 
@@ -73,45 +114,66 @@ We can observe that the objective function of our optimization problem \eqref{e:
 \begin{equation}
 f(x) = y_l D(y_l) \Rightarrow f'(x) = y_l D'(y_l) + D(y_l) \Rightarrow f''(x) = y_l D''(y_l) + D'(y_l) + D'(y_l)
 \end{equation}
-$D''(y_l)$ and $ D'(y_l)$ are greater or equal to zero, for the hypotesis that $ D(y_l)$ is convex. So every terms in $f''(x)$ is non negative and thus the objective function is convex.\\
+We know that $D'(y_l)$ and $D''(y_l)$ are nonnegative, on the hypothesis that $D(y_l)$ is convex. Thus each term of $f''(x)$ is nonnegative and the sum of nonnegative terms is nonnegative, hence the objective function is convex.\\
 Another observation that we make is that each constraint is linear and that they define a set which is compact. Indeed, each variable $x_r$ is bounded:
 \begin{equation}
 0 \leq x_r \leq \underset{s \in S}{\text{max}} {f_s} \;\; \forall r \in R
 \end{equation}
-so the set set defined is closed and bounded.\\\\
-Considering the previous observations we can apply the \emph{lagrange multipliers method} to apply theorem $(1)$ from the lesson 2. We define two set of multipliers:
+so the set defined is closed and bounded.\\\\
+Considering the previous observations we can apply the \emph{lagrange multipliers method} while using  theorem $(1)$ from the lesson 2. We define two set of multipliers:
 \begin{enumerate}
-\item one for each source-destination pair, $\lambda_s$, $ \forall s \in S$ and
-\item one for each link, $\mu_l$, $\forall l \in E$.
+        \item one for each source-destination pair, $\lambda_s$, $ \forall s \in S$ and
+        \item one for each link, $\nu_l$, $\forall l \in E$.
 \end{enumerate}
-We can claim that  $\z^* = {\x^* \choose \y^*}$ is a global minimum for this optimization problem if and only if there exist $\lambda_s^*$, $\forall s \in S$ and $\mu_l^*$, $\forall l \in E$ such that:
+We can claim that  $\z^* = {\x^* \choose \y^*}$ is a global minimum for this optimization problem if and only if there exist $\lambda_s^*$, $\forall s \in S$ and $\nu_l^*$, $\forall l \in E$ such that:
 \begin{enumerate}
 \item $\x^*$ and $\y^*$ are feasible,
 \item $\nabla_\x L(\z^*,\blambda^*,\bmu^*)^T (\z - \z^*) \ge 0,  \;\; \forall \z \in \{{\x \choose \y} ,\; \x \ge 0  \}$.
 \end{enumerate}
 The Lagrangian function results:
 \begin{equation} 
-L(z,\lambda,\mu)= \sum_{l \in E}  y_l D(y_l) + \sum_{s \in S} \lambda_{s} \left(f_s - \sum_{r:s(r)=s} x_r\right) + \sum_{l \in E} \mu_l \left(\sum_{r:l \in r} x_r - y_l\right) 
+L(z,\lambda,\nu)= \sum_{l \in E}  y_l D(y_l) + \sum_{s \in S} \lambda_{s} \left(f_s - \sum_{r:s(r)=s} x_r\right) + \sum_{l \in E} \nu_l \left(\sum_{r:l \in r} x_r - y_l\right) 
 \end{equation}
 When we differentiate it, we obtain:
 \begin{equation}
 \begin{aligned}
-\frac{\partial L}{\partial y_l}=D(y_l)+  y_l D'(y_l) -  \mu_l  &&&&& &&&&& \frac{\partial L}{\partial x_r}=- \lambda_{s(r)} + \sum_{l \in r} \mu_l
+        \frac{\partial L}{\partial y_{\bar{l}}}=D(y_{\bar{l}})+  y_{\bar{l}} D'(y_{\bar{l}}) -  \nu_{\bar{l}}  &&&&& &&&&& \frac{\partial L}{\partial x_{\bar{r}}}=- \lambda_{s(\bar{r})} + \sum_{l \in \bar{r}} \nu_l
 \end{aligned}
 \end{equation}
-At the optimum, we have \textcolor{red}{(explanation missing)}:
+For $y_l$:\\
+We can take a point "above" or "below" and we get:
+$$ \frac{\delta L}{\delta y_l} \Delta y_l \geq 0$$
+$$ \frac{\delta L}{\delta y_l} -\Delta y_l \geq 0$$
+from these two results we can see that $\frac{\delta L}{\delta y_l}$ is equal to zero.
+
+For $x_r$:\\
+We can take a point to the "right" but not on the "left" because of the domain, and we get:
+$$ \frac{\delta L}{\delta x_r} \geq 0$$
+if there is traffic on that route $x_r = 0$ and if there is no traffic then $x_r \geq 0$.
+At the optimum, we have:
 \begin{equation}
 \lambda^*_s(r)
 \begin{cases}
-= \sum_{l \in r} \mu^*_l & \mbox{if } x_r > 0,\\
-\leq \sum_{l \in r} \mu^*_l & \mbox{if } x_r = 0,
+= \sum_{l \in r} \nu^*_l & \mbox{if } x_r > 0,\\
+\leq \sum_{l \in r} \nu^*_l & \mbox{if } x_r = 0,
 \end{cases}
 \end{equation}
-and the quantity $\mu_l$ results:
+and the quantity $\nu_l$ results:
 \begin{equation}
-\mu^*_l = D(y_l)+  y_l D'(y_l).
+\nu^*_l = D(y_l)+  y_l D'(y_l).
 \end{equation} 
-We can interpret the result for the multiplier $\mu_l$ like the cost that the drivers traversing link $l$ must pay. That cost is composed of the delay (i.e. $D(y_l)$) and the additional term $y_l D'(y_l)$. \textcolor{red}{(the interpretation of the additional term is missing)}. Furthermore, we can see $\lambda_{s(r)}$ the minimal cost available to source-destination pair $s(r)$.\\\\
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=.7]{fig3.pdf}
+\caption{Additional term representation}
+\label{fig:3}
+\end{figure}
+
+We can interpret the result for the multiplier $\nu_l$ like the cost that the drivers traversing link $l$ must pay. That cost is composed of the delay (i.e. $D(y_l)$) and the additional term $y_l D'(y_l)$. The additional term is useful when there is a change in traffic and represent the cost we put on a route to prevent agents from using it.
+
+In Figure~\ref{fig:3} we can see the total delay before $\Delta y$ arrives on the black pattern. When computing the new delay, we need to consider the red pattern, $\Delta D_{a}$ and the blue pattern, $\Delta D_{b}$. Where $\Delta D_{a} = y_l'D(y_l') \Delta y$ and $\Delta D_b = \Delta y D(y_l')$. Then we have $\Delta D = \Delta y (D(y_l')+y_l'D'(y_l'))$, the weight of the link. Furthermore, we can see $\lambda_{s(r)}$ the minimal cost available to source-destination pair $s(r)$. 
+
 With the previous observation, if we add tolls on the link, the drivers are encouraged to have a more desirable behaviour. Indeed we keep the example in the previous section and we add the toll $y_l D'(y_l)$ at the cost of each link. Each user experiences then two new costs for traveling the two paths. 
  $C_{upper}=1 + y_{upper} D'(y_{upper})= 1$ and   $C_{lower} = y_{lower} + y_{lower} D'(y_l)= 2y_{lower}$. Now the drivers choose the link where the total cost, delay plus toll, is minimum and the final solution is that half of the drivers choose the lower link and the others choose the upper link, that is the optimal solution for Problem \eqref{e:prob}.
 
