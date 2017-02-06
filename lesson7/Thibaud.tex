@@ -1,0 +1,153 @@
+\section{Full Information Dynamics}
+In this section, we have now access to the full information of the instance.\\
+"Full Information" means we know \textbf{every previous steps} which lead to the current position.
+\begin{equation}\label{eq:10}
+\begin{aligned}
+a_i(t + 1) = F_i(\underset{-}{a}(0), \underset{-}{a}(1), ..., \underset{-}{a}(t), U_i(.))
+\end{aligned}
+\end{equation}
+\begin{itemize}
+\item $a_i$ is the position for the agent designed by $i$,
+\item $t$ is the current step (time),
+\item $U$ is the utility for the targeted agent, following the function of utility “$.$”,
+\item and $F$ is the function which will compute the best next position, hence the Full Information Dynamics, thanks to knowing all the solutions of all the agents and the function of utility.
+\end{itemize}
+\section{Oracle-based Dynamic}
+In this case, we calculate the next step, with this time using an oracle to calculate the utility of every previous position for every other position but ours:
+\begin{equation}\label{eq:11}
+\begin{aligned}
+a_i(t + 1) = F_i(U_i(., \underset{-}{a_{-i}}(0)), U_i(., \underset{-}{a_{-i}}(1)), ..., U_i(., \underset{-}{a_{-i}}(t)))
+\end{aligned}
+\end{equation}
+Notes: $a_-i$ means all positions $a_j$ for $j != i$\\
+In this case, we don't need to know what people are playing, we need to know if I need to play something different and therefore, what will be my payoff if I play such a given position?\\
+BR Dynamic falls in this class: the last step $(a_i(0), a_i(1), ..., a_i(t))$ could be limited to: $a_i(t + 1) = F_i(U_i(⋅, a_i(t)))$
+\section{Payoff based Dynamic}
+Now we consider all those informations:
+\begin{equation}\label{eq:12}
+\begin{aligned}
+V_i(a_i, t) = \frac{\sum_{k = 1}^t U_i(a_i(k)), \underset{-}{a_{-i}}(k) * \mathbb{1}(a_i(k) = a_i)}{t}
+\end{aligned}
+\end{equation}
+According to this function, we know \textbf{what we will get} when we pick this position, but we only know when we \textbf{actually} go on it.\\
+So, we can wonder: \textbf{is there other way to learn over time? To finally learn how to go to NE?}\\
+\\
+Let's start with full information: Is there a way a learn to play to NE?\\
+\\
+This strategy is called “\textbf{fictitious play}”:\\
+"Every player thinks the other players are playing according to a stationary mixed strategy" ← \textbf{This statement is not true!}
+\begin{table}
+    \centering
+	\begin{tabular}{| l | l | l | l | l | l | l | l | l |}
+\hline
+q(2, R) = & 0 & 0 & 0 & 1/4 & 2/5 & 3/6 & $\rightarrow$ & 1/3\\
+q(2, S) = & 1 & 1/2 & 1/3 & 1/4 & 1/5 & 1/6 & $\rightarrow$ & 1/3\\
+q(2, P) = & 0 & 1/2 & 2/3 & 2/4 & 2/5 & 2/6 & $\rightarrow$ & 1/3\\ \hline
+  &   &   &   &   &   &   & &\\
+1 & R & R & S & S & S & P & &\\
+2 & S & P & P & R & R & R & &\\
+  &   &   &   &   &   &   & &\\ \hline
+q(1, R) = & 1 & 1 & 2/3 & 2/4 & 2/5 & 2/6 & $\rightarrow$ & 1/3\\
+q(1, S) = & 0 & 0 & 1/3 & 2/4 & 3/5 & 3/6 & $\rightarrow$ & 1/3\\
+q(1, P) = & 0 & 0 & 0 & 0 & 0 & 1/6 & $\rightarrow$ & 1/3\\ \hline
+	\end{tabular}
+	\caption{Example: Rock-Scissor-Paper}\label{tab:a} 
+\end{table}\\
+See Table 1 below.\\
+Over time, we notice the distribution is 1/3.\\
+\\
+We calculate the probability $q$ with the following equation:
+\begin{equation}\label{eq:13}
+\begin{aligned}
+q_i^j(a_j) = \frac{\sum_{k = 1}^t \mathbb{1}(a_j(k) = a_j))}{t}
+\end{aligned}
+\end{equation}
+Player $a_i$ sees player $j$ is playing its action $a_j$, where $a_j$ belongs to the set $A_j$ of the following possible actions, ${ R, S, P }$.\\
+$a_j(n)$ belongs to $A_j$ action $j$ playing at turn $n$.\\
+$a_i$ belongs to BR (for every $j$, plays according to $q_i^j$).\\
+For potential games, $q_i^j(a_j) \rightarrow q*^j(a_j)$ $\underset{-}{q*^j}_{j=1..n}$ is a NE.\\
+Good news: if $\underset{-}{q*^j} {j=1..n}$ is a pure strategy NE, for $t$ large enough, then $\underset{-}{a}(t)$ is a NE.\\
+Examples:\\
+\begin{table}
+	\centering
+	\begin{tabular}{| l | l | l |}
+\hline
+  & A      & B \\ \hline
+A & $0, 0$ & $1, 1$\\
+B & $1, 1$ & $0, 0$\\ \hline
+	\end{tabular}
+	\caption{Normal form of a game}\label{tab:b} 
+\end{table}
+See Table 2 above.\\
+\begin{table}
+    \centering
+	\begin{tabular}{| l | l | l | l | l | l | l |}
+\hline
+ & 1 & 1/2 & 2/3 & 2/4 & $\rightarrow$ & 1/2\\
+ & 0 & 1/2 & 1/3 & 2/4 & $\rightarrow$ & 1/2\\ \hline
+R & A & B & A & B & & \\
+C & A & B & A & B & & \\ \hline
+ & 1 & 1/2 & 2/3 & 2/4 & $\rightarrow$ & 1/2\\
+ & 0 & 1/2 & 1/3 & 2/4 & $\rightarrow$ & 1/2\\ \hline
+	\end{tabular}
+	\caption{Example: Rock-Scissor-Paper with JAFP}\label{tab:c}
+\end{table}
+See Table 3 below.\\
+\\
+But the payoff is always zero!\\
+\\
+In oracle-based game: an estimate\\
+\begin{equation}\label{eq:14}
+\begin{aligned}
+V_i(a_i, t) = \frac{\sum_{k = 1}^t U_i(a_i(k)), \underset{-}{a_{-i}}(k) * \mathbb{1}(a_i(k) = a_i)}{t}
+\end{aligned}
+\end{equation}\\
+it's called the \textbf{Joint Action Fictitious Play}.\\
+\section{Joint Action Fictitious Play (JAFP)}\\
+Based on the frequential play, you select at every step, you check the following rules: \\
+\begin{itemize}
+\item if $a_i(t)$ belongs to $argmax_{a_i}(V_i(a_i, t))$ then $a_i(t + 1) = a_i(t)$: "you play it again"
+\item else "you toss a coin":
+    \begin{itemize}
+        \item $\rightarrow$ w.p $\frac{1 - \epsilon}{(|B_i(t)|)}$, then pick $a_i(t + 1)$ in $B_i(t)$
+	    \item $\rightarrow$ w.p $\epsilon$: $a_i(t + 1) = a_i(t)$
+    \end{itemize}
+\end{itemize}
+→ $\epsilon$ is called the \textbf{inertia of the player}.\\
+\\
+POTENTIAL GAME which is also GENERIC (there are no same action which give the same payoff).\\
+Joint Action Fictitious Play (JAFP) converges w.p 1 to a NE.\\
+\\
+At every time, you have:
+\begin{itemize}
+    \item $a_i(t)$ reference action,
+    \item $U_i(t)$ reference utility.
+\end{itemize}
+With this information, we can build:\\
+\begin{itemize}
+    \item w.p $1-\epsilon$: $\rightarrow$ $a_i(t + 1) = a_i(t)$ ; $U_i(t + 1) = U_i(a_i(t + 1), \underset{-}{a{-i}}(t+1))$
+    \item w.p $\epsilon$: $\rightarrow$ playing a random $a'_i$, which belongs to $A_i$ ; $a_i(t + 1) = a'_i =$
+    \begin{itemize}
+        \item $(if U_i(a'_i, a_-i(t + 1)) > U_i(t))$ then $a_i(t + 1) = a'_i$   ; $U_i(t + 1) = U_i(a'_i, a_-i(t + 1))$\\
+		\item (else)                               then $a_i(t + 1) = a_i(t) ; U_i(t + 1) = U_i(t)$
+    \end{itemize}
+\end{itemize}\\
+For every $p < 1$, there is an unique $\epsilon > 0$, such as
+\begin{itemize}
+	\item for $t$ large enough:
+    \begin{itemize}
+		\item $a_i(t)$ is a NE with probability at least $p$.
+    \end{itemize}
+\end{itemize}
+\\
+if you want to be sure you are playing NE:\\
+you need to pick $p \uparrow 1$ ; $\epsilon \downarrow 0$\\
+\\
+If you explore less, you take more time\\
+All this dynamic guaranty you to reach NE.\\
+The worst case is NE can't be reach.\\
+\\
+Price of Anarchy: the worst possible NE can't be worst than twice the optimum.\\
+\\
+Another approach is to do Simulated Annealing.\\
+$\RightArrow$ Logistic learning.\\
